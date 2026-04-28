@@ -257,7 +257,7 @@ releases! 🌟
 
 When it comes to system configurations, you will need to manage the following files:
 
-- [.env](./docker/.env): Keeps the fundamental setups for the system, such as `SVR_HTTP_PORT`, `MYSQL_PASSWORD`, and
+- [.env](./docker/.env): Keeps the fundamental setups for the system, such as `SVR_HTTP_PORT`, `POSTGRES_PASSWORD`, and
   `MINIO_PASSWORD`.
 - [service_conf.yaml.template](./docker/service_conf.yaml.template): Configures the back-end services. The environment variables in this file will be automatically populated when the Docker container starts. Any environment variables set within the Docker container will be available for use, allowing you to customize service behavior based on the deployment environment.
 - [docker-compose.yml](./docker/docker-compose.yml): The system relies on [docker-compose.yml](./docker/docker-compose.yml) to start up.
@@ -332,7 +332,7 @@ docker build --platform linux/amd64 \
    uv run python3 download_deps.py
    pre-commit install
    ```
-3. Launch the dependent services (MinIO, Elasticsearch, Redis, and MySQL) using Docker Compose:
+3. Launch the dependent services (MinIO, Elasticsearch, Redis, and PostgreSQL) using Docker Compose:
 
    ```bash
    docker compose -f docker/docker-compose-base.yml up -d
@@ -341,7 +341,7 @@ docker build --platform linux/amd64 \
    Add the following line to `/etc/hosts` to resolve all hosts specified in **docker/.env** to `127.0.0.1`:
 
    ```
-   127.0.0.1       es01 infinity mysql minio redis sandbox-executor-manager
+   127.0.0.1       es01 infinity postgres minio redis sandbox-executor-manager
    ```
 4. If you cannot access HuggingFace, set the `HF_ENDPOINT` environment variable to use a mirror site:
 

@@ -20,6 +20,13 @@ import (
 	"ragflow/internal/entity"
 )
 
+func deleteOldestSQL(driver string) string {
+	if driver == "postgres" {
+		return "DELETE FROM time_records WHERE id IN (SELECT id FROM time_records ORDER BY id ASC LIMIT ?)"
+	}
+	return "DELETE FROM time_records ORDER BY id ASC LIMIT ?"
+}
+
 // TimeRecordDAO time record data access object
 type TimeRecordDAO struct{}
 
@@ -52,7 +59,7 @@ func (dao *TimeRecordDAO) GetCount() (int64, error) {
 
 // DeleteOldest removes the oldest records (smallest ID) with limit
 func (dao *TimeRecordDAO) DeleteOldest(limit int64) error {
-	return DB.Exec("DELETE FROM time_records ORDER BY id ASC LIMIT ?", limit).Error
+	return DB.Exec(deleteOldestSQL(DB.Dialector.Name()), limit).Error
 }
 
 // GetByID retrieves a single record by its ID

@@ -4,7 +4,7 @@
 # Usage: ./migration.sh [-p project_name] [backup|restore] [backup_folder]
 #
 # This script helps you backup and restore RAGFlow Docker volumes
-# including MySQL, MinIO, Redis, and Elasticsearch data.
+# including PostgreSQL, MinIO, Redis, and Elasticsearch data.
 
 set -e  # Exit on any error
 # Instead, we'll handle errors manually for better debugging experience
@@ -12,8 +12,8 @@ set -e  # Exit on any error
 # Default values
 DEFAULT_BACKUP_FOLDER="backup"
 DEFAULT_PROJECT_NAME="docker"
-VOLUME_BASES=("mysql_data" "minio_data" "redis_data" "esdata01")
-BACKUP_FILES=("mysql_backup.tar.gz" "minio_backup.tar.gz" "redis_backup.tar.gz" "es_backup.tar.gz")
+VOLUME_BASES=("postgres_data" "minio_data" "redis_data" "esdata01")
+BACKUP_FILES=("postgres_backup.tar.gz" "minio_backup.tar.gz" "redis_backup.tar.gz" "es_backup.tar.gz")
 
 # Build volume names from project name and base names
 build_volume_names() {
@@ -51,7 +51,7 @@ show_help() {
     echo "  $0 -p ragflow restore my_backup  # Restore volumes for project 'ragflow'"
     echo ""
     echo "DOCKER VOLUMES (with default project name '$DEFAULT_PROJECT_NAME'):"
-    echo "  - ${DEFAULT_PROJECT_NAME}_mysql_data     (MySQL database)"
+    echo "  - ${DEFAULT_PROJECT_NAME}_postgres_data  (PostgreSQL database)"
     echo "  - ${DEFAULT_PROJECT_NAME}_minio_data     (MinIO object storage)"
     echo "  - ${DEFAULT_PROJECT_NAME}_redis_data     (Redis cache)"
     echo "  - ${DEFAULT_PROJECT_NAME}_esdata01       (Elasticsearch indices)"

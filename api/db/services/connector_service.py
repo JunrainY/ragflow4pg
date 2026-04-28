@@ -177,7 +177,7 @@ class SyncLogsService(CommonService):
         if connector_id:
             query = query.where(cls.model.connector_id == connector_id)
         else:
-            database_type = os.getenv("DB_TYPE", "mysql")
+            database_type = os.getenv("DB_TYPE", "postgres")
             if "postgres" in database_type.lower():
                 interval_expr = SQL("make_interval(mins => t2.refresh_freq)")
             else:
@@ -368,4 +368,3 @@ class Connector2KbService(CommonService):
                         cls.model.kb_id==kb_id
                     ).dicts()
         )
-

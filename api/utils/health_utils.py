@@ -216,11 +216,22 @@ def check_oceanbase_health() -> dict:
         }
 
 
-def get_mysql_status():
+def get_database_status():
     try:
-        cursor = DB.execute_sql("SHOW PROCESSLIST;")
-        res_rows = cursor.fetchall()
-        headers = ['id', 'user', 'host', 'db', 'command', 'time', 'state', 'info']
+        database_type = os.getenv("DB_TYPE", "postgres").lower()
+        if "postgres" in database_type:
+            cursor = DB.execute_sql("""
+                SELECT COALESCE(state, 'unknown') AS state, COUNT(*) AS count
+                FROM pg_stat_activity
+                GROUP BY COALESCE(state, 'unknown')
+                ORDER BY count DESC, state ASC
+            """)
+            res_rows = cursor.fetchall()
+            headers = ["state", "count"]
+        else:
+            cursor = DB.execute_sql("SHOW PROCESSLIST;")
+            res_rows = cursor.fetchall()
+            headers = ['id', 'user', 'host', 'db', 'command', 'time', 'state', 'info']
         cursor.close()
         return {
             "status": "alive",
@@ -231,6 +242,10 @@ def get_mysql_status():
             "status": "timeout",
             "message": f"error: {str(e)}",
         }
+
+
+def get_mysql_status():
+    return get_database_status()
 
 
 def _minio_scheme_and_verify():

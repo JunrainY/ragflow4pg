@@ -97,7 +97,7 @@ type ServerConfig struct {
 
 // DatabaseConfig database configuration
 type DatabaseConfig struct {
-	Driver   string `mapstructure:"driver"` // mysql
+	Driver   string `mapstructure:"driver"` // postgres
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
 	Database string `mapstructure:"database"`
@@ -419,10 +419,12 @@ func FromEnvironments() error {
 	switch databaseType {
 	case "mysql":
 		globalConfig.Database.Driver = "mysql"
+	case "postgres":
+		globalConfig.Database.Driver = "postgres"
 	case "":
 		// Default
 		if globalConfig.Database.Driver == "" {
-			globalConfig.Database.Driver = "mysql"
+			globalConfig.Database.Driver = "postgres"
 		}
 	default:
 		return fmt.Errorf("invalid database type: %s", databaseType)
@@ -544,10 +546,20 @@ func FromConfigFile(configPath string) error {
 	}
 	globalConfig.RegisterEnabled = registerEnabled
 
-	// If we loaded service_conf.yaml, map mysql fields to DatabaseConfig
+	// If we loaded service_conf.yaml, map postgres/mysql fields to DatabaseConfig
 	if globalConfig != nil && globalConfig.Database.Host == "" {
-		// Try to map from mysql section
-		if v.IsSet("mysql") {
+		if v.IsSet("postgres") {
+			postgresConfig := v.Sub("postgres")
+			if postgresConfig != nil {
+				globalConfig.Database.Driver = "postgres"
+				globalConfig.Database.Host = postgresConfig.GetString("host")
+				globalConfig.Database.Port = postgresConfig.GetInt("port")
+				globalConfig.Database.Database = postgresConfig.GetString("name")
+				globalConfig.Database.Username = postgresConfig.GetString("user")
+				globalConfig.Database.Password = postgresConfig.GetString("password")
+				globalConfig.Database.Charset = "utf8"
+			}
+		} else if v.IsSet("mysql") {
 			mysqlConfig := v.Sub("mysql")
 			if mysqlConfig != nil {
 				globalConfig.Database.Driver = "mysql"

@@ -66,7 +66,7 @@ SECRET_KEY = None
 FACTORY_LLM_INFOS = None
 ALLOWED_LLM_FACTORIES = None
 
-DATABASE_TYPE = os.getenv("DB_TYPE", "mysql")
+DATABASE_TYPE = os.getenv("DB_TYPE", "postgres")
 DATABASE = decrypt_database_config(name=DATABASE_TYPE)
 
 # authentication
@@ -173,7 +173,7 @@ class StorageFactory:
 
 def init_settings():
     global DATABASE_TYPE, DATABASE
-    DATABASE_TYPE = os.getenv("DB_TYPE", "mysql")
+    DATABASE_TYPE = os.getenv("DB_TYPE", "postgres")
     DATABASE = decrypt_database_config(name=DATABASE_TYPE)
     
     global ALLOWED_LLM_FACTORIES, LLM_FACTORY, LLM_BASE_URL
@@ -410,4 +410,3 @@ def _resolve_per_model_config(entry_dict, backup_factory, backup_api_key, backup
 def print_rag_settings():
     logging.info(f"MAX_CONTENT_LENGTH: {DOC_MAXIMUM_SIZE}")
     logging.info(f"MAX_FILE_COUNT_PER_USER: {int(os.environ.get('MAX_FILE_NUM_PER_USER', 0))}")
-

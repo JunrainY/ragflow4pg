@@ -1,18 +1,19 @@
 ragflow:
   host: ${RAGFLOW_HOST:-0.0.0.0}
   http_port: 9380
+  mineru_remote_url: '${MINERU_REMOTE_URL:-}'
+  mineru_api_key: '${MINERU_API_KEY:-}'
 admin:
   host: ${RAGFLOW_HOST:-0.0.0.0}
   http_port: 9381
-mysql:
-  name: '${MYSQL_DBNAME:-rag_flow}'
-  user: '${MYSQL_USER:-root}'
-  password: '${MYSQL_PASSWORD:-infini_rag_flow}'
-  host: '${MYSQL_HOST:-mysql}'
-  port: ${MYSQL_PORT:-3306}
-  max_connections: 900
-  stale_timeout: 300
-  max_allowed_packet: ${MYSQL_MAX_PACKET:-1073741824}
+postgres:
+  name: '${POSTGRES_DBNAME:-rag_flow}'
+  user: '${POSTGRES_USER:-rag_flow}'
+  password: '${POSTGRES_PASSWORD:-infini_rag_flow}'
+  host: '${POSTGRES_HOST:-postgres}'
+  port: ${POSTGRES_PORT:-5432}
+  max_connections: 100
+  stale_timeout: 30
 minio:
   user: '${MINIO_USER:-rag_flow}'
   password: '${MINIO_PASSWORD:-infini_rag_flow}'
@@ -36,7 +37,7 @@ infinity:
   postgres_port: 5432
   db_name: 'default_db'
 oceanbase:
-  scheme: 'oceanbase' # set 'mysql' to create connection using mysql config
+  scheme: 'oceanbase' # set to 'mysql' only if OceanBase should reuse the legacy mysql config block
   config:
     db_name: '${OCEANBASE_DOC_DBNAME:-test}'
     user: '${OCEANBASE_USER:-root@ragflow}'
@@ -61,14 +62,15 @@ user_default_llm:
     embedding_model:
       api_key: 'xxx'
       base_url: 'http://${TEI_HOST}:80'
-# postgres:
-#   name: '${POSTGRES_DBNAME:-rag_flow}'
-#   user: '${POSTGRES_USER:-rag_flow}'
-#   password: '${POSTGRES_PASSWORD:-infini_rag_flow}'
-#   host: '${POSTGRES_HOST:-postgres}'
-#   port: 5432
-#   max_connections: 100
-#   stale_timeout: 30
+# mysql:
+#   name: '${MYSQL_DBNAME:-rag_flow}'
+#   user: '${MYSQL_USER:-root}'
+#   password: '${MYSQL_PASSWORD:-infini_rag_flow}'
+#   host: '${MYSQL_HOST:-mysql}'
+#   port: ${MYSQL_PORT:-3306}
+#   max_connections: 900
+#   stale_timeout: 300
+#   max_allowed_packet: ${MYSQL_MAX_PACKET:-1073741824}
 # s3:
 #   access_key: 'access_key'
 #   secret_key: 'secret_key'
@@ -99,7 +101,7 @@ user_default_llm:
 #   tenant_id: 'tenant_id'
 #   container_name: 'container_name'
 #   cloud: 'public'  # Azure cloud: 'public', 'china', 'government', or 'germany'
-# The OSS object storage uses the MySQL configuration above by default. If you need to switch to another object storage service, please uncomment and configure the following parameters.
+# OpenDAL can use its own backend configuration below. Uncomment and configure it only when you want OpenDAL-backed object storage.
 # opendal:
 #   scheme: 'mysql'  # Storage type, such as s3, oss, azure, etc.
 #   config:

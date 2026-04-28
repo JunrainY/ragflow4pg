@@ -33,14 +33,14 @@ The output will look similar to this:
 DRIVER    VOLUME NAME
 local     docker_esdata01
 local     docker_minio_data
-local     docker_mysql_data
+local     docker_postgres_data
 local     docker_redis_data
 ```
 
 These volumes contain all the data you need to migrate.
 
 :::note
-The volume name prefix (e.g., `docker_`) comes from the Docker Compose project name. By default it is `docker` (derived from the directory name). If you started RAGFlow with `docker compose -p <project_name>`, your volumes will be prefixed with `<project_name>_` instead, for example `ragflow_mysql_data`.
+The volume name prefix (e.g., `docker_`) comes from the Docker Compose project name. By default it is `docker` (derived from the directory name). If you started RAGFlow with `docker compose -p <project_name>`, your volumes will be prefixed with `<project_name>_` instead, for example `ragflow_postgres_data`.
 :::
 
 ### Step 1: Stop RAGFlow services

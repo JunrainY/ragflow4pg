@@ -78,8 +78,8 @@ class TestOceanBaseDatabase:
 class TestOceanBaseConfiguration:
     """Test cases for OceanBase configuration via environment variables."""
 
-    def test_settings_default_to_mysql(self):
-        """Test that default DB_TYPE is mysql."""
+    def test_settings_default_to_postgres(self):
+        """Test that default DB_TYPE is postgres."""
         import os
         # Save original value
         original = os.environ.get('DB_TYPE')
@@ -91,9 +91,9 @@ class TestOceanBaseConfiguration:
             
             # Reload settings
             from common import settings
-            settings.DATABASE_TYPE = os.getenv("DB_TYPE", "mysql")
+            settings.DATABASE_TYPE = os.getenv("DB_TYPE", "postgres")
             
-            assert settings.DATABASE_TYPE == "mysql"
+            assert settings.DATABASE_TYPE == "postgres"
         finally:
             # Restore original value
             if original:
@@ -110,7 +110,7 @@ class TestOceanBaseConfiguration:
             
             # Reload settings
             from common import settings
-            settings.DATABASE_TYPE = os.getenv("DB_TYPE", "mysql")
+            settings.DATABASE_TYPE = os.getenv("DB_TYPE", "postgres")
             
             assert settings.DATABASE_TYPE == "oceanbase"
         finally:

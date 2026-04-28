@@ -1100,7 +1100,7 @@ func (s *Service) GetServiceDetails(configDict map[string]interface{}) (map[stri
 	// Call detail function based on service type
 	switch serviceType {
 	case "meta_data":
-		return s.getMySQLStatus(name)
+		return s.getDatabaseStatus(name)
 	case "message_queue":
 		return s.getRedisInfo(name)
 	case "retrieval":
@@ -1128,8 +1128,8 @@ func (s *Service) GetServiceDetails(configDict map[string]interface{}) (map[stri
 	}
 }
 
-// getMySQLStatus gets MySQL service status
-func (s *Service) getMySQLStatus(name string) (map[string]interface{}, error) {
+// getDatabaseStatus gets metadata database service status
+func (s *Service) getDatabaseStatus(name string) (map[string]interface{}, error) {
 	startTime := time.Now()
 
 	// Check basic connectivity with SELECT 1
@@ -1158,7 +1158,7 @@ func (s *Service) getMySQLStatus(name string) (map[string]interface{}, error) {
 		"service_name": name,
 		"status":       "alive",
 		"elapsed":      fmt.Sprintf("%.1d", time.Since(startTime).Milliseconds()),
-		"message":      "MySQL connection successful",
+		"message":      "Database connection successful",
 	}, nil
 }
 
@@ -1588,7 +1588,7 @@ func (s *Service) GetAllEnvironments() ([]map[string]interface{}, error) {
 	// DB_TYPE
 	dbType := os.Getenv("DB_TYPE")
 	if dbType == "" {
-		dbType = "mysql"
+		dbType = "postgres"
 	}
 	result = append(result, map[string]interface{}{
 		"env":   "DB_TYPE",

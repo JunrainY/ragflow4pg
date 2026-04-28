@@ -35,6 +35,7 @@ import (
 	gormLogger "gorm.io/gorm/logger"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -70,15 +71,6 @@ func InitDB() error {
 	cfg := server.GetConfig()
 	dbCfg := cfg.Database
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
-		dbCfg.Username,
-		dbCfg.Password,
-		dbCfg.Host,
-		dbCfg.Port,
-		dbCfg.Database,
-		dbCfg.Charset,
-	)
-
 	// Set log level
 	var gormLogLevel gormLogger.LogLevel
 	if cfg.Server.Mode == "debug" {
@@ -89,7 +81,7 @@ func InitDB() error {
 
 	// Connect to database
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+	DB, err = gorm.Open(openDialector(dbCfg), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogLevel),
 		NowFunc: func() time.Time {
 			return time.Now().Local()
@@ -185,6 +177,36 @@ func GetModelProviderManager() *entity.ProviderManager {
 	return modelProviderManager
 }
 
+func buildDSN(dbCfg server.DatabaseConfig) string {
+	if dbCfg.Driver == "postgres" {
+		return fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Local",
+			dbCfg.Host,
+			dbCfg.Username,
+			dbCfg.Password,
+			dbCfg.Database,
+			dbCfg.Port,
+		)
+	}
+
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
+		dbCfg.Username,
+		dbCfg.Password,
+		dbCfg.Host,
+		dbCfg.Port,
+		dbCfg.Database,
+		dbCfg.Charset,
+	)
+}
+
+func openDialector(dbCfg server.DatabaseConfig) gorm.Dialector {
+	dsn := buildDSN(dbCfg)
+	if dbCfg.Driver == "postgres" {
+		return postgres.Open(dsn)
+	}
+	return mysql.Open(dsn)
+}
+
 // autoMigrateSafely runs AutoMigrate and ignores duplicate index errors
 // This handles cases where indexes already exist (e.g., created by Python backend)
 func autoMigrateSafely(db *gorm.DB, model interface{}) error {
@@ -207,6 +229,11 @@ func autoMigrateSafely(db *gorm.DB, model interface{}) error {
 
 	if strings.Contains(errStr, "Error 1050") && strings.Contains(errStr, "Table") {
 		logger.Info("Table already exists, skipping", zap.String("error", errStr))
+		return nil
+	}
+
+	if strings.Contains(strings.ToLower(errStr), "already exists") {
+		logger.Info("Schema object already exists, skipping", zap.String("error", errStr))
 		return nil
 	}
 

@@ -256,7 +256,7 @@
 
 系统配置涉及以下三份文件：
 
-- [.env](./docker/.env)：存放一些基本的系统环境变量，比如 `SVR_HTTP_PORT`、`MYSQL_PASSWORD`、`MINIO_PASSWORD` 等。
+- [.env](./docker/.env)：存放一些基本的系统环境变量，比如 `SVR_HTTP_PORT`、`POSTGRES_PASSWORD`、`MINIO_PASSWORD` 等。
 - [service_conf.yaml.template](./docker/service_conf.yaml.template)：配置各类后台服务。
 - [docker-compose.yml](./docker/docker-compose.yml): 系统依赖该文件完成启动。
 
@@ -334,7 +334,7 @@ docker build --platform linux/amd64 \
    pre-commit install
    ```
 
-3. 通过 Docker Compose 启动依赖的服务（MinIO, Elasticsearch, Redis, and MySQL）：
+3. 通过 Docker Compose 启动依赖的服务（MinIO、Elasticsearch、Redis 和 PostgreSQL）：
 
    ```bash
    docker compose -f docker/docker-compose-base.yml up -d
@@ -343,7 +343,7 @@ docker build --platform linux/amd64 \
    在 `/etc/hosts` 中添加以下代码，目的是将 **conf/service_conf.yaml** 文件中的所有 host 地址都解析为 `127.0.0.1`：
 
    ```
-   127.0.0.1       es01 infinity mysql minio redis sandbox-executor-manager
+   127.0.0.1       es01 infinity postgres minio redis sandbox-executor-manager
    ```
 4. 如果无法访问 HuggingFace，可以把环境变量 `HF_ENDPOINT` 设成相应的镜像站点：
 
