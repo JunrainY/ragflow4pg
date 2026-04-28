@@ -24,6 +24,9 @@ Cargo.lock
 
 # Exclude Mac generated files
 .DS_Store
+.gocache/
+.gomodcache/
+.pycache/
 
 # Exclude the log folder
 docker/ragflow-logs/
@@ -50,6 +53,7 @@ uv-x86_64*.tar.gz
 *[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
 .lh/
 .venv
+data/
 docker/data
 
 # OceanBase data and conf
