@@ -109,12 +109,22 @@ const (
 	TokenVector
 	TokenSize
 	TokenName // For ALTER PROVIDER <name> NAME <new_name>
+	TokenBalance
 	TokenInstance
 	TokenInstances
 	TokenDisable
 	TokenEnable
 	TokenUse
+	TokenCheck
 	TokenThink
+	TokenEffort
+	TokenVerbosity
+	TokenNone
+	TokenMinimal
+	TokenLow
+	TokenMedium
+	TokenHigh
+	TokenMax
 	TokenLS
 	TokenCat
 	TokenInsert
@@ -127,6 +137,8 @@ const (
 	TokenChunks
 	TokenDocument
 	TokenTag
+	TokenRegion
+	TokenURL
 	TokenLog
 	TokenLevel
 	TokenDebug
