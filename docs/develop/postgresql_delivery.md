@@ -130,11 +130,16 @@ POSTGRES_PASSWORD=infini_rag_flow
 执行过的 Python 焦点测试命令：
 
 ```bash
-uv run --with pytest --python /Users/leiyang/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/bin/python3.12 python -m pytest test/unit_test/api/db/test_oceanbase_peewee.py test/unit_test/api/utils/test_health_utils_db_status.py -q
+env UV_CACHE_DIR=/Users/leiyang/Desktop/code/ragflowforDM/.uv-cache \
+uv run --with pytest --with pytest-asyncio --python 3.13 \
+python -m pytest \
+test/unit_test/api/db/test_oceanbase_peewee.py \
+test/unit_test/api/utils/test_health_utils_db_status.py -q
 ```
 
 ## 已知说明
 
 - 直接运行 `uv run --group test ...` 在当前 macOS arm64 环境下会被 `tensorflow-cpu` 依赖卡住，这是测试依赖组的平台兼容问题，不是本次 PostgreSQL 改造引入的问题。
+- upstream v0.26.0 起 `pyproject.toml` 要求 Python `>=3.13,<3.15`，本分支的 Python 焦点测试也应使用 Python 3.13。
 - 仓库里仍保留部分 `mysql` 相关代码和文案，主要用于 OceanBase / SeekDB 协议兼容、外部数据源接入能力、Agent SQL 工具和历史说明文档。
 - 这些残留不影响“默认业务元数据库使用 PostgreSQL”的交付目标。

@@ -230,7 +230,8 @@ go test -mod=mod ./internal/server ./internal/dao
 ### 2. Python 焦点测试
 
 ```bash
-uv run --with pytest --python /Users/leiyang/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/bin/python3.12 \
+env UV_CACHE_DIR=/Users/leiyang/Desktop/code/ragflowforDM/.uv-cache \
+uv run --with pytest --with pytest-asyncio --python 3.13 \
 python -m pytest \
 test/unit_test/api/db/test_oceanbase_peewee.py \
 test/unit_test/api/utils/test_health_utils_db_status.py -q

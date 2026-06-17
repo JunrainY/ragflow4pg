@@ -118,7 +118,7 @@ func (s *SearchService) toSearchAppResponse(search *entity.Search) map[string]in
 		"status":        search.Status,
 		"create_time":   search.CreateTime,
 		"update_time":   search.UpdateTime,
-		"search_config": search.SearchConfig,
+		"search_config": map[string]interface{}(search.SearchConfig),
 	}
 
 	if search.Avatar != nil {
@@ -329,4 +329,31 @@ func (s *SearchService) UpdateSearch(userID string, searchID string, req *Update
 	}
 
 	return updatedSearch, nil
+}
+
+// GetDetail gets search details by ID including search_config
+func (s *SearchService) GetDetail(searchID string) (map[string]interface{}, error) {
+	search, err := s.searchDAO.GetByID(searchID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := map[string]interface{}{
+		"id":            search.ID,
+		"tenant_id":     search.TenantID,
+		"name":          search.Name,
+		"description":   search.Description,
+		"created_by":    search.CreatedBy,
+		"status":        search.Status,
+		"create_time":   search.CreateTime,
+		"update_time":   search.UpdateTime,
+		"search_config": map[string]interface{}(search.SearchConfig),
+	}
+
+	if search.Avatar != nil {
+		result["avatar"] = *search.Avatar
+	}
+
+	return result, nil
 }
