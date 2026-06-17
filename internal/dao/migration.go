@@ -289,11 +289,7 @@ func migrateAddUniqueEmail(db *gorm.DB) error {
 
 	// Check if there's a duplicate email issue first
 	var duplicateCount int64
-	err := db.Raw(`
-		SELECT COUNT(*) FROM (
-			SELECT email FROM user GROUP BY email HAVING COUNT(*) > 1
-		) AS duplicates
-	`).Scan(&duplicateCount).Error
+	err := db.Raw(userEmailDuplicateCountSQL(db.Dialector.Name())).Scan(&duplicateCount).Error
 	if err != nil {
 		return err
 	}
@@ -321,6 +317,18 @@ func migrateAddUniqueEmail(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func userEmailDuplicateCountSQL(driver string) string {
+	userTable := "user"
+	if driver == "postgres" {
+		userTable = `"user"`
+	}
+	return fmt.Sprintf(`
+		SELECT COUNT(*) FROM (
+			SELECT email FROM %s GROUP BY email HAVING COUNT(*) > 1
+		) AS duplicates
+	`, userTable)
 }
 
 // modifyColumnTypes modifies column types that need explicit ALTER statements
@@ -517,7 +525,8 @@ func skillSearchTableSQL(driver string) string {
 			create_time BIGINT,
 			create_date TIMESTAMP,
 			update_time BIGINT,
-			update_date TIMESTAMP
+			update_date TIMESTAMP,
+			CONSTRAINT idx_tenant_space_embd UNIQUE (tenant_id, space_id, embd_id)
 		)
 		`
 	}
@@ -563,7 +572,8 @@ func skillSpaceTableSQL(driver string) string {
 			create_time BIGINT,
 			create_date TIMESTAMP,
 			update_time BIGINT,
-			update_date TIMESTAMP
+			update_date TIMESTAMP,
+			CONSTRAINT idx_tenant_name_status UNIQUE (tenant_id, name, status)
 		)
 		`
 	}
