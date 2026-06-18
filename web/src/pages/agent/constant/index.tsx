@@ -587,7 +587,7 @@ export enum SortMethod {
 }
 
 export enum ListOperations {
-  TopN = 'topN',
+  Nth = 'nth',
   Head = 'head',
   Tail = 'tail',
   Filter = 'filter',
@@ -597,7 +597,8 @@ export enum ListOperations {
 
 export const initialListOperationsValues = {
   query: '',
-  operations: ListOperations.TopN,
+  operations: ListOperations.Nth,
+  strict: false,
   outputs: {
     // result: {
     //   type: 'Array<?>',
@@ -697,6 +698,7 @@ export const RestrictedUpstreamMap = {
   [Operator.LoopStart]: [Operator.Begin],
   [Operator.ExitLoop]: [Operator.Begin],
   [Operator.DocGenerator]: [Operator.Begin],
+  [Operator.Browser]: [Operator.Begin],
 };
 
 export const NodeMap = {
@@ -748,6 +750,7 @@ export const NodeMap = {
   [Operator.ExitLoop]: 'exitLoopNode',
   [Operator.ExcelProcessor]: 'ragNode',
   [Operator.DocGenerator]: 'ragNode',
+  [Operator.Browser]: 'ragNode',
 };
 
 export enum BeginQueryType {
@@ -783,6 +786,7 @@ export const NoDebugOperatorsList = [
   Operator.TitleChunker,
   Operator.Extractor,
   Operator.Tool,
+  Operator.Loop,
 ];
 
 export const NoCopyOperatorsList = [
@@ -972,9 +976,29 @@ export const initialDocGeneratorValues = {
   watermark_text: '',
   add_page_numbers: true,
   add_timestamp: true,
+  include_download_info_in_content: false,
   font_size: 12,
   outputs: {
+    doc_id: { type: 'string' },
+    filename: { type: 'string' },
+    mime_type: { type: 'string' },
+    size: { type: 'number' },
     download: { type: 'string' },
+  },
+};
+
+export const initialBrowserValues = {
+  ...initialLlmBaseValues,
+  prompts: `{${AgentGlobals.SysQuery}}`,
+  max_steps: 30,
+  headless: true,
+  enable_default_extensions: false,
+  chromium_sandbox: false,
+  persist_session: true,
+  upload_sources: '',
+  outputs: {
+    content: { type: 'string', value: '' },
+    downloaded_files: { type: 'Array<Object>', value: [] },
   },
 };
 

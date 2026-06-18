@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net/http"
 	"ragflow/internal/common"
-	"ragflow/internal/logger"
 	"ragflow/internal/server/local"
 	"ragflow/internal/service"
 
@@ -67,7 +66,7 @@ func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {
 			}
 		}
 
-		if *user.IsSuperuser {
+		if user.IsSuperuser != nil && *user.IsSuperuser {
 			c.JSON(http.StatusForbidden, gin.H{
 				"code":    common.CodeForbidden,
 				"message": "Super user shouldn't access the URL",
@@ -78,7 +77,7 @@ func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {
 		if !local.IsAdminAvailable() {
 			license := local.GetAdminStatus()
 			errMsg := fmt.Sprintf("server license %s", license.Reason)
-			logger.Warn(errMsg)
+			common.Warn(errMsg)
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"code":    common.CodeUnauthorized,
 				"message": errMsg,
