@@ -613,16 +613,35 @@ func legacySkillSearchIndexDropSQL(driver string) string {
 	return `ALTER TABLE skill_search_configs DROP INDEX idx_tenant_embd`
 }
 
+func skillSearchLookupIndexSQL(driver string) []string {
+	if driver == "postgres" {
+		return []string{
+			`CREATE INDEX IF NOT EXISTS idx_skill_search_configs_tenant_id ON skill_search_configs(tenant_id)`,
+			`CREATE INDEX IF NOT EXISTS idx_skill_search_configs_space_id ON skill_search_configs(space_id)`,
+		}
+	}
+	return nil
+}
+
 func skillSearchUniqueIndexSQL(driver string) string {
 	if driver == "postgres" {
-		return `CREATE UNIQUE INDEX idx_tenant_space_embd ON skill_search_configs(tenant_id, space_id, embd_id)`
+		return `CREATE UNIQUE INDEX IF NOT EXISTS idx_tenant_space_embd ON skill_search_configs(tenant_id, space_id, embd_id)`
 	}
 	return `ALTER TABLE skill_search_configs ADD UNIQUE INDEX idx_tenant_space_embd (tenant_id, space_id, embd_id)`
 }
 
+func skillSpaceLookupIndexSQL(driver string) []string {
+	if driver == "postgres" {
+		return []string{
+			`CREATE INDEX IF NOT EXISTS idx_skill_spaces_tenant_id ON skill_spaces(tenant_id)`,
+		}
+	}
+	return nil
+}
+
 func skillSpaceUniqueIndexSQL(driver string) string {
 	if driver == "postgres" {
-		return `CREATE UNIQUE INDEX idx_tenant_name_status ON skill_spaces(tenant_id, name, status)`
+		return `CREATE UNIQUE INDEX IF NOT EXISTS idx_tenant_name_status ON skill_spaces(tenant_id, name, status)`
 	}
 	return `ALTER TABLE skill_spaces ADD UNIQUE INDEX idx_tenant_name_status (tenant_id, name, status)`
 }
@@ -636,9 +655,18 @@ func skillUpdateTimeColumnSQL(driver, table string) string {
 
 func skillSpaceIndexSQL(driver string) (string, string) {
 	if driver == "postgres" {
-		return `DROP INDEX IF EXISTS idx_tenant_name`, `CREATE UNIQUE INDEX idx_tenant_name_status ON skill_spaces(tenant_id, name, status)`
+		return `DROP INDEX IF EXISTS idx_tenant_name`, `CREATE UNIQUE INDEX IF NOT EXISTS idx_tenant_name_status ON skill_spaces(tenant_id, name, status)`
 	}
 	return `DROP INDEX idx_tenant_name ON skill_spaces`, `CREATE UNIQUE INDEX idx_tenant_name_status ON skill_spaces(tenant_id, name, status)`
+}
+
+func execSQLStatements(db *gorm.DB, statements []string) error {
+	for _, statement := range statements {
+		if err := db.Exec(statement).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // migrateSkillSearchTables creates skill search related tables
@@ -694,6 +722,10 @@ func migrateSkillSearchTables(db *gorm.DB) error {
 		}
 	}
 
+	if err := execSQLStatements(db, skillSearchLookupIndexSQL(db.Dialector.Name())); err != nil {
+		return fmt.Errorf("failed to create lookup indexes for skill_search_configs: %w", err)
+	}
+
 	return nil
 }
 
@@ -732,6 +764,10 @@ func migrateSkillSpaceTables(db *gorm.DB) error {
 		if err := migrateSkillSpaceIndex(db); err != nil {
 			return fmt.Errorf("failed to migrate skill_space index: %w", err)
 		}
+	}
+
+	if err := execSQLStatements(db, skillSpaceLookupIndexSQL(db.Dialector.Name())); err != nil {
+		return fmt.Errorf("failed to create lookup indexes for skill_spaces: %w", err)
 	}
 
 	return nil

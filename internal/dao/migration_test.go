@@ -43,6 +43,34 @@ func TestSkillSearchTableSQLForMySQLKeepsUpstreamDialect(t *testing.T) {
 	}
 }
 
+func TestSkillSearchLookupIndexSQLForPostgresUsesPostgresDialect(t *testing.T) {
+	statements := skillSearchLookupIndexSQL("postgres")
+	if len(statements) != 2 {
+		t.Fatalf("postgres skill_search_configs should create two lookup indexes, got %d: %v", len(statements), statements)
+	}
+
+	joined := strings.ToUpper(strings.Join(statements, "\n"))
+	for _, forbidden := range []string{"ALTER TABLE", " ADD INDEX ", " ADD UNIQUE INDEX ", "IDX_TENANT_ID ON"} {
+		if strings.Contains(joined, forbidden) {
+			t.Fatalf("postgres skill_search_configs index SQL contains invalid or conflicting syntax %q: %s", forbidden, joined)
+		}
+	}
+	for _, required := range []string{
+		"CREATE INDEX IF NOT EXISTS IDX_SKILL_SEARCH_CONFIGS_TENANT_ID ON SKILL_SEARCH_CONFIGS(TENANT_ID)",
+		"CREATE INDEX IF NOT EXISTS IDX_SKILL_SEARCH_CONFIGS_SPACE_ID ON SKILL_SEARCH_CONFIGS(SPACE_ID)",
+	} {
+		if !strings.Contains(joined, required) {
+			t.Fatalf("postgres skill_search_configs index SQL missing %q: %s", required, joined)
+		}
+	}
+}
+
+func TestSkillSearchLookupIndexSQLForMySQLDoesNotDuplicateInlineIndexes(t *testing.T) {
+	if statements := skillSearchLookupIndexSQL("mysql"); len(statements) != 0 {
+		t.Fatalf("mysql skill_search_configs should keep lookup indexes inline, got extra SQL: %v", statements)
+	}
+}
+
 func TestSkillSpaceTableSQLForPostgresKeepsUniqueConstraint(t *testing.T) {
 	sql := skillSpaceTableSQL("postgres")
 	upper := strings.ToUpper(sql)
@@ -73,14 +101,53 @@ func TestSkillSpaceTableSQLForMySQLKeepsUpstreamDialect(t *testing.T) {
 	}
 }
 
+func TestSkillSpaceLookupIndexSQLForPostgresUsesPostgresDialect(t *testing.T) {
+	statements := skillSpaceLookupIndexSQL("postgres")
+	if len(statements) != 1 {
+		t.Fatalf("postgres skill_spaces should create one lookup index, got %d: %v", len(statements), statements)
+	}
+
+	upper := strings.ToUpper(statements[0])
+	for _, forbidden := range []string{"ALTER TABLE", " ADD INDEX ", " ADD UNIQUE INDEX ", "IDX_TENANT_ID ON"} {
+		if strings.Contains(upper, forbidden) {
+			t.Fatalf("postgres skill_spaces index SQL contains invalid or conflicting syntax %q: %s", forbidden, statements[0])
+		}
+	}
+	required := "CREATE INDEX IF NOT EXISTS IDX_SKILL_SPACES_TENANT_ID ON SKILL_SPACES(TENANT_ID)"
+	if !strings.Contains(upper, required) {
+		t.Fatalf("postgres skill_spaces index SQL missing %q: %s", required, statements[0])
+	}
+}
+
+func TestSkillSpaceLookupIndexSQLForMySQLDoesNotDuplicateInlineIndexes(t *testing.T) {
+	if statements := skillSpaceLookupIndexSQL("mysql"); len(statements) != 0 {
+		t.Fatalf("mysql skill_spaces should keep lookup indexes inline, got extra SQL: %v", statements)
+	}
+}
+
 func TestSkillSpaceIndexSQLForPostgresUsesPostgresDialect(t *testing.T) {
 	dropSQL, createSQL := skillSpaceIndexSQL("postgres")
 
 	if strings.Contains(strings.ToUpper(dropSQL), " ON ") {
 		t.Fatalf("postgres drop index SQL should not use MySQL ON clause: %s", dropSQL)
 	}
-	if !strings.Contains(strings.ToUpper(createSQL), "CREATE UNIQUE INDEX") {
-		t.Fatalf("postgres create index SQL should create a unique index: %s", createSQL)
+	if !strings.Contains(strings.ToUpper(createSQL), "CREATE UNIQUE INDEX IF NOT EXISTS") {
+		t.Fatalf("postgres create index SQL should create an idempotent unique index: %s", createSQL)
+	}
+}
+
+func TestSkillUniqueIndexSQLForPostgresIsIdempotent(t *testing.T) {
+	for _, sql := range []string{
+		skillSearchUniqueIndexSQL("postgres"),
+		skillSpaceUniqueIndexSQL("postgres"),
+	} {
+		upper := strings.ToUpper(sql)
+		if strings.Contains(upper, "ALTER TABLE") {
+			t.Fatalf("postgres unique index SQL should not use ALTER TABLE: %s", sql)
+		}
+		if !strings.Contains(upper, "CREATE UNIQUE INDEX IF NOT EXISTS") {
+			t.Fatalf("postgres unique index SQL should be idempotent: %s", sql)
+		}
 	}
 }
 
